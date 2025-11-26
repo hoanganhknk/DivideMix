@@ -158,9 +158,53 @@ class ResNet(nn.Module):
             out = self.linear(out)
         return out
 
+class CifarResNet(nn.Module):
+    """
+    ResNet cho CIFAR: 3 stage (16, 32, 64), n=5 block/stage -> 32 layers (6n+2).
+    Dùng PreActBlock để tương thích với phần còn lại của code.
+    """
+    def __init__(self, block, num_blocks, num_classes=10):
+        super(CifarResNet, self).__init__()
+        self.in_planes = 16
+
+        self.conv1 = conv3x3(3, 16)
+        self.bn1 = nn.BatchNorm2d(16)
+        self.layer1 = self._make_layer(block, 16, num_blocks[0], stride=1)
+        self.layer2 = self._make_layer(block, 32, num_blocks[1], stride=2)
+        self.layer3 = self._make_layer(block, 64, num_blocks[2], stride=2)
+        self.linear = nn.Linear(64 * block.expansion, num_classes)
+
+    def _make_layer(self, block, planes, num_blocks, stride):
+        strides = [stride] + [1] * (num_blocks - 1)
+        layers = []
+        for s in strides:
+            layers.append(block(self.in_planes, planes, s))
+            self.in_planes = planes * block.expansion
+        return nn.Sequential(*layers)
+
+    # Giữ signature giống ResNet phía trên cho “an toàn”
+    def forward(self, x, lin=0, lout=4):
+        out = x
+        if lin < 1 and lout > -1:
+            out = F.relu(self.bn1(self.conv1(out)))
+        if lin < 2 and lout > 0:
+            out = self.layer1(out)
+        if lin < 3 and lout > 1:
+            out = self.layer2(out)
+        if lin < 4 and lout > 2:
+            out = self.layer3(out)
+        if lout > 3:
+            # input 32x32, sau 2 lần stride=2 còn 8x8 → avg pool 8
+            out = F.avg_pool2d(out, 8)
+            out = out.view(out.size(0), -1)
+            out = self.linear(out)
+        return out
 
 def ResNet18(num_classes=10):
     return ResNet(PreActBlock, [2,2,2,2], num_classes=num_classes)
+
+def ResNet32(num_classes=10):
+    return CifarResNet(PreActBlock, [5, 5, 5], num_classes=num_classes)
 
 def ResNet34(num_classes=10):
     return ResNet(BasicBlock, [3,4,6,3], num_classes=num_classes)

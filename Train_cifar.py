@@ -208,7 +208,7 @@ class NegEntropy(object):
         return torch.mean(torch.sum(probs.log()*probs, dim=1))
 
 def create_model():
-    model = ResNet18(num_classes=args.num_class)
+    model = ResNet32(num_classes=args.num_class)
     model = model.cuda()
     return model
 
