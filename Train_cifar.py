@@ -16,7 +16,7 @@ import dataloader_cifar as dataloader
 parser = argparse.ArgumentParser(description='PyTorch CIFAR Training')
 parser.add_argument('--batch_size', default=64, type=int, help='train batchsize') 
 parser.add_argument('--lr', '--learning_rate', default=0.02, type=float, help='initial learning rate')
-parser.add_argument('--noise_mode',  default='sym')
+parser.add_argument('--noise_mode',  default='unif')
 parser.add_argument('--alpha', default=4, type=float, help='parameter for Beta')
 parser.add_argument('--lambda_u', default=25, type=float, help='weight for unsupervised loss')
 parser.add_argument('--p_threshold', default=0.5, type=float, help='clean probability threshold')
@@ -129,10 +129,10 @@ def warmup(epoch,net,optimizer,dataloader):
         optimizer.zero_grad()
         outputs = net(inputs)               
         loss = CEloss(outputs, labels)      
-        if args.noise_mode=='asym':  # penalize confident prediction for asymmetric noise
+        if args.noise_mode=='flip': 
             penalty = conf_penalty(outputs)
             L = loss + penalty      
-        elif args.noise_mode=='sym':   
+        elif args.noise_mode=='unif':   
             L = loss
         L.backward()  
         optimizer.step() 
@@ -234,7 +234,7 @@ optimizer2 = optim.SGD(net2.parameters(), lr=args.lr, momentum=0.9, weight_decay
 
 CE = nn.CrossEntropyLoss(reduction='none')
 CEloss = nn.CrossEntropyLoss()
-if args.noise_mode=='asym':
+if args.noise_mode=='flip':
     conf_penalty = NegEntropy()
 
 all_loss = [[],[]] # save the history of losses from two networks
