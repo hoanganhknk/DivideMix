@@ -15,7 +15,7 @@ import dataloader_cifar as dataloader
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR Training')
 parser.add_argument('--batch_size', default=64, type=int, help='train batchsize') 
-parser.add_argument('--lr', '--learning_rate', default=0.02, type=float, help='initial learning rate')
+parser.add_argument('--lr', '--learning_rate', default=0.1, type=float, help='initial learning rate')
 parser.add_argument('--noise_mode',  default='unif')
 parser.add_argument('--alpha', default=4, type=float, help='parameter for Beta')
 parser.add_argument('--lambda_u', default=25, type=float, help='weight for unsupervised loss')
@@ -241,7 +241,7 @@ all_loss = [[],[]] # save the history of losses from two networks
 
 for epoch in range(args.num_epochs+1):   
     lr=args.lr
-    if epoch >= 150:
+    if epoch >= 60:
         lr /= 10      
     for param_group in optimizer1.param_groups:
         param_group['lr'] = lr       
