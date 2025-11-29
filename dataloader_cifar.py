@@ -313,26 +313,21 @@ class cifar_dataloader:
         self.root_dir = root_dir
         self.log = log
         self.noise_file = noise_file
-
+        normalize = transforms.Normalize(mean=[x / 255.0 for x in [125.3, 123.0, 113.9]],
+                                     std=[x / 255.0 for x in [63.0, 62.1, 66.7]])
         if self.dataset == "cifar10":
             self.transform_train = transforms.Compose(
                 [
                     transforms.RandomCrop(32, padding=4),
                     transforms.RandomHorizontalFlip(),
                     transforms.ToTensor(),
-                    transforms.Normalize(
-                        (0.4914, 0.4822, 0.4465),
-                        (0.2023, 0.1994, 0.2010),
-                    ),
+                    normalize,
                 ]
             )
             self.transform_test = transforms.Compose(
                 [
                     transforms.ToTensor(),
-                    transforms.Normalize(
-                        (0.4914, 0.4822, 0.4465),
-                        (0.2023, 0.1994, 0.2010),
-                    ),
+                    normalize,
                 ]
             )
         elif self.dataset == "cifar100":
@@ -341,19 +336,13 @@ class cifar_dataloader:
                     transforms.RandomCrop(32, padding=4),
                     transforms.RandomHorizontalFlip(),
                     transforms.ToTensor(),
-                    transforms.Normalize(
-                        (0.507, 0.487, 0.441),
-                        (0.267, 0.256, 0.276),
-                    ),
+                    normalize,
                 ]
             )
             self.transform_test = transforms.Compose(
                 [
                     transforms.ToTensor(),
-                    transforms.Normalize(
-                        (0.507, 0.487, 0.441),
-                        (0.267, 0.256, 0.276),
-                    ),
+                    normalize,
                 ]
             )
         else:
